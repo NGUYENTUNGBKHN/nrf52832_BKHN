@@ -1,12 +1,12 @@
-PROJECT_NAME     := ble_app_uart_pca10040_s132
-TARGETS          := nrf52832_xxaa
+PROJECT_NAME     := template
+TARGETS          := nrf52832
 OUTPUT_DIRECTORY := _build
 
 SDK_ROOT := .
 PROJ_DIR := ./src
 
-$(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-  LINKER_SCRIPT  := ble_app_uart_gcc_nrf52.ld
+$(OUTPUT_DIRECTORY)/$(TARGETS).out: \
+  LINKER_SCRIPT  := nrf52.ld
 
 # Source files common to all targets
 SRC_FILES += \
@@ -45,7 +45,6 @@ SRC_FILES += \
   $(SDK_ROOT)/lib/libraries/bsp/bsp.c \
   $(SDK_ROOT)/lib/libraries/bsp/bsp_btn_ble.c \
   $(SDK_ROOT)/lib/libraries/bsp/bsp_nfc.c \
-  $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -61,6 +60,7 @@ SRC_FILES += \
   $(SDK_ROOT)/lib/softdevice/common/nrf_sdh.c \
   $(SDK_ROOT)/lib/softdevice/common/nrf_sdh_ble.c \
   $(SDK_ROOT)/lib/softdevice/common/nrf_sdh_soc.c \
+  $(PROJ_DIR)/application/main.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -244,12 +244,12 @@ LIB_FILES += -lc -lnosys -lm
 .PHONY: default help
 
 # Default target - first one defined
-default: nrf52832_xxaa
+default: $(TARGETS)
 
 # Print all targets that can be built
 help:
 	@echo following targets are available:
-	@echo		nrf52832_xxaa
+	@echo		$(TARGETS)
 	@echo		flash_softdevice
 	@echo		sdk_config - starting external tool for editing sdk_config.h
 	@echo		flash      - flashing binary
@@ -264,7 +264,7 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 .PHONY: flash flash_softdevice erase
 
 # Flash the program
-flash: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
+flash: $(OUTPUT_DIRECTORY)/$(TARGETS).hex
 	@echo Flashing: $<
 	nrfjprog -f nrf52 --program $< --sectorerase
 	nrfjprog -f nrf52 --reset
@@ -278,7 +278,7 @@ flash_softdevice:
 erase:
 	nrfjprog -f nrf52 --eraseall
 
-SDK_CONFIG_FILE := ../config/sdk_config.h
-CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
+SDK_CONFIG_FILE := $(SDK_ROOT)/config/cmsisconfig/sdk_config.h
+CMSIS_CONFIG_TOOL := $(SDK_ROOT)/config/cmsisconfig/CMSIS_Configuration_Wizard.jar
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
